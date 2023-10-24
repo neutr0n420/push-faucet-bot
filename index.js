@@ -1,5 +1,10 @@
 // import { Client, GatewayIntentBits } from "discord.js";
-const { Client, Collection, IntentsBitField } = require("discord.js");
+const {
+  Client,
+  Collection,
+  IntentsBitField,
+  EmbedBuilder,
+} = require("discord.js");
 require("dotenv").config();
 const client = new Client({
   intents: [
@@ -9,27 +14,68 @@ const client = new Client({
     IntentsBitField.Flags.MessageContent,
   ],
 });
-const { add } = require("./commands/add");
+const { transfer } = require("./src/transfer");
+const { isValidWalletAddress } = require("./src/validAddress");
+
+let hash;
 
 client.commands = new Collection();
 
-client.on("interactionCreate", async (interation) => {
-  if (!interation.isChatInputCommand()) return;
-  if (interation.commandName == "ping") {
-    await interation.reply("Your mom!");
-  }
-});
-
-client.on("interactionCreate", (interaction) => {
+client.on("interactionCreate", async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
-  console.log(interaction.commandName);
   if (interaction.commandName === "hey") {
     interaction.reply("Hey!");
   }
   if (interaction.commandName == "faucet") {
     const walletAddress = interaction.options.get("wallet-address").value;
-    interaction.reply(`your wallet address is ${walletAddress}`);
-    console.log(add(1, 2));
+
+    if (!isValidWalletAddress(walletAddress)) {
+      interaction.reply("Plese enter Valid Wallet address :) ");
+      return;
+    } else {
+      interaction.reply("sending you $50 PUSH token");
+      console.log(walletAddress);
+      transfer(walletAddress)
+        .then((response) => {
+          // interaction.reply(response);
+          const embed = new EmbedBuilder()
+            .setColor("#3BA55C")
+            .setDescription(
+              `[View on Ethscan](https://goerli.etherscan.io//tx/${response})`
+            );
+          interaction.followUp({
+            content: `Transcation of 50 $Push is created with hash`,
+            embeds: [embed],
+          });
+          console.log(response);
+        })
+        .catch((error) => {
+          interaction.followUp({
+            content: `${error}`,
+          });
+        });
+      // await interaction.reply("Hash is", hash);
+    }
+  }
+  if (interaction.commandName == "start") {
+    interaction.reply(
+      `Welcome to the Push Faucet Bot! I'm here to help you distribute $PUSH test tokens for the Goerli testnet. `
+    );
+  }
+  if (interaction.commandName == "ping") {
+    InteractionResponse.reply("pong, Bot is running properly");
+  }
+  if (interaction.commandName == "community") {
+    const twitter = new EmbedBuilder()
+      .setColor("#3BA55C")
+      .setDescription(`[Twitter](https://twitter.com/pushprotocol)`);
+    const website = new EmbedBuilder()
+      .setColor("#3BA55C")
+      .setDescription(`[push's Website](https://push.org)`);
+    interaction.reply({
+      content: "Get involved in the community",
+      embeds: [twitter, website],
+    });
   }
 });
 

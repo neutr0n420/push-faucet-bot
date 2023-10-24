@@ -3,8 +3,12 @@ const { REST, Routes, ApplicationCommandOptionType } = require("discord.js");
 
 const commands = [
   {
-    name: "hey",
-    description: "Replies with Hey!",
+    name: "start",
+    description: "Introduction of the bot and what it does ",
+  },
+  {
+    name: "community",
+    description: "Get involve in push community",
   },
   {
     name: "faucet",
